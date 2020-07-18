@@ -156,7 +156,7 @@ public final class ApplicationFilterChain implements FilterChain {
             }
         }
         else {
-            // 处理 Filter
+            // 处理 Filter 和 Servlet
             internalDoFilter(request, response);
         }
     }

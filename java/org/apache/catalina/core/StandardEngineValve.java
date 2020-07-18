@@ -70,7 +70,7 @@ final class StandardEngineValve extends ValveBase {
     public final void invoke(Request request, Response response)
         throws IOException, ServletException {
 
-        // Select the Host to be used for this Request
+        // 选择该请求对应的主机
         Host host = request.getHost();
         if (host == null) {
             response.sendError

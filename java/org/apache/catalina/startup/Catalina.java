@@ -541,7 +541,7 @@ public class Catalina {
         File file = null;
         try {
             try {
-                // 完成对 server.xml 配置文件的解析
+                // 拿到 server.xml 配置文件
                 file = configFile();
                 inputStream = new FileInputStream(file);
                 inputSource = new InputSource(file.toURI().toURL().toString());
@@ -604,6 +604,7 @@ public class Catalina {
             try {
                 inputSource.setByteStream(inputStream);
                 digester.push(this);
+                // 完成对 server.xml 配置文件的解析
                 digester.parse(inputSource);
             }
             catch (SAXParseException spe) {
@@ -636,6 +637,7 @@ public class Catalina {
 
         // Start the new server
         try {
+            // 初始化各个组件
             getServer().init();
         }
         catch (LifecycleException e) {

@@ -127,8 +127,10 @@ public abstract class LifecycleBase implements Lifecycle {
             invalidTransition(Lifecycle.BEFORE_INIT_EVENT);
         }
 
+        // 使用 模板设计模式, 将公共代码抽取出来, 放到父类
         try {
             setStateInternal(LifecycleState.INITIALIZING, null, false);
+            // 初始化各个组件 Server -> NamingResource -> Service -> Engine -> MapperListener -> Connector
             initInternal();
             setStateInternal(LifecycleState.INITIALIZED, null, false);
         }
@@ -149,7 +151,6 @@ public abstract class LifecycleBase implements Lifecycle {
 
     /**
      * {@inheritDoc}
-     * 使用 模板模式 将公共代码抽取出来, 放到公共父类中
      */
     @Override
     public final synchronized void start() throws LifecycleException {

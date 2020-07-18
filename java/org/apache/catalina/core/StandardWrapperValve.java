@@ -94,6 +94,7 @@ final class StandardWrapperValve
         long t1 = System.currentTimeMillis();
         requestCount.incrementAndGet();
         StandardWrapper wrapper = (StandardWrapper) getContainer();
+        // 终于看到了 Servlet 对象
         Servlet servlet = null;
         Context context = (Context) wrapper.getParent();
 
@@ -169,7 +170,7 @@ final class StandardWrapperValve
         request.setAttribute(Globals.DISPATCHER_TYPE_ATTR, dispatcherType);
         request.setAttribute(Globals.DISPATCHER_REQUEST_PATH_ATTR,
                 requestPathMB);
-        // 创建过滤器链
+        // 创建 Filter 链
         ApplicationFilterChain filterChain =
                 ApplicationFilterFactory.createFilterChain(request, wrapper, servlet);
 
@@ -186,7 +187,7 @@ final class StandardWrapperValve
                         }
                         else {
                             // 调用各个 Filter, 最后调用 Servlet
-                            // 将 Request, Response 对象转成 ServletRequest, ServletResponse 对象
+                            // 最终将 Request, Response 对象转成 ServletRequest, ServletResponse 对象
                             filterChain.doFilter(request.getRequest(),
                                     response.getResponse());
                         }

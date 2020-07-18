@@ -1043,11 +1043,11 @@ public class Connector extends LifecycleMBeanBase  {
 
         super.initInternal();
 
-        // Initialize adapter
+        // 初始化适配器
         adapter = new CoyoteAdapter(this);
         protocolHandler.setAdapter(adapter);
 
-        // Make sure parseBodyMethodsSet has a default
+        // parseBodyMethodsSet -> POST
         if (null == parseBodyMethodsSet) {
             setParseBodyMethods(getParseBodyMethods());
         }
@@ -1097,7 +1097,7 @@ public class Connector extends LifecycleMBeanBase  {
         setState(LifecycleState.STARTING);
 
         try {
-            // 启动 ProtocolHandler (包含一个 Endpoint)
+            // 启动 ProtocolHandler (包含一个 Endpoint 和 Adapter)
             protocolHandler.start();
         } catch (Exception e) {
             throw new LifecycleException(

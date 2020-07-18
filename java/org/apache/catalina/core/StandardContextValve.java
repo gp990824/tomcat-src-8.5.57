@@ -16,18 +16,17 @@
  */
 package org.apache.catalina.core;
 
-import java.io.IOException;
-
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.connector.Request;
 import org.apache.catalina.connector.Response;
 import org.apache.catalina.valves.ValveBase;
 import org.apache.tomcat.util.buf.MessageBytes;
 import org.apache.tomcat.util.res.StringManager;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * Valve that implements the default basic behavior for the
@@ -52,15 +51,14 @@ final class StandardContextValve extends ValveBase {
      * based on the specified request URI.  If no matching Wrapper can
      * be found, return an appropriate HTTP error.
      *
-     * @param request Request to be processed
+     * @param request  Request to be processed
      * @param response Response to be produced
-     *
-     * @exception IOException if an input/output error occurred
-     * @exception ServletException if a servlet error occurred
+     * @throws IOException      if an input/output error occurred
+     * @throws ServletException if a servlet error occurred
      */
     @Override
     public final void invoke(Request request, Response response)
-        throws IOException, ServletException {
+            throws IOException, ServletException {
 
         // Disallow any direct access to resources under WEB-INF or META-INF
         MessageBytes requestPathMB = request.getRequestPathMB();
@@ -72,7 +70,7 @@ final class StandardContextValve extends ValveBase {
             return;
         }
 
-        // Select the Wrapper to be used for this Request
+        // 继续找到合适的 wrapper (里面包装了 Servlet 对象)
         Wrapper wrapper = request.getWrapper();
         if (wrapper == null || wrapper.isUnavailable()) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -82,7 +80,8 @@ final class StandardContextValve extends ValveBase {
         // Acknowledge the request
         try {
             response.sendAcknowledgement();
-        } catch (IOException ioe) {
+        }
+        catch (IOException ioe) {
             container.getLogger().error(sm.getString(
                     "standardContextValve.acknowledgeException"), ioe);
             request.setAttribute(RequestDispatcher.ERROR_EXCEPTION, ioe);
@@ -93,6 +92,7 @@ final class StandardContextValve extends ValveBase {
         if (request.isAsyncSupported()) {
             request.setAsyncSupported(wrapper.getPipeline().isAsyncSupported());
         }
+        // 责任链模式继续调用, 执行 wrapper 的 Valve 的 invoke 方法
         wrapper.getPipeline().getFirst().invoke(request, response);
     }
 }
