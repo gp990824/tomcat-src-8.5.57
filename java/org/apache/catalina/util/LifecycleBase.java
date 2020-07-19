@@ -114,6 +114,7 @@ public abstract class LifecycleBase implements Lifecycle {
      * @param data Data associated with event.
      */
     protected void fireLifecycleEvent(String type, Object data) {
+        // 监听器一直在监听组件的事件 (生命周期状态)
         LifecycleEvent event = new LifecycleEvent(this, type, data);
         for (LifecycleListener listener : lifecycleListeners) {
             listener.lifecycleEvent(event);
@@ -130,7 +131,8 @@ public abstract class LifecycleBase implements Lifecycle {
         // 使用 模板设计模式, 将公共代码抽取出来, 放到父类
         try {
             setStateInternal(LifecycleState.INITIALIZING, null, false);
-            // 初始化各个组件 Server -> NamingResource -> Service -> Engine -> MapperListener -> Connector
+            // 初始化各个组件 Server -> Service -> Engine -> MapperListener -> Connector
+            // 在启动 Container 组件的时候又会初始化 Host, Context, Wrapper, Pipeline, Valve 组件
             initInternal();
             setStateInternal(LifecycleState.INITIALIZED, null, false);
         }
@@ -183,7 +185,11 @@ public abstract class LifecycleBase implements Lifecycle {
         try {
             setStateInternal(LifecycleState.STARTING_PREP, null, false);
 
-            // 启动组件 Server -> Service -> Engine -> MapperListener -> Connector
+            // 启动组件 Server -> Service -> Engine -> 子容器 (Host -> Pipeline -> HostValve) ->
+            // 启动所有的 (Context -> Wrapper -> Pipeliine (Wrapper) -> WrapperValve ->
+            // Pipeline(Context) -> Context(Valve) ) ->
+            // Pipeline (Engine) -> EngineValve -> MapperListener -> Connector
+            System.out.println(this.getClass().getName() + " 组件正在启动!");
             startInternal();
             if (state.equals(LifecycleState.FAILED)) {
                 // This is a 'controlled' failure. The component put itself into the

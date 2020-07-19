@@ -1766,8 +1766,8 @@ public class StandardContext extends ContainerBase
     public void setLoader(Loader loader) {
 
         Lock writeLock = loaderLock.writeLock();
-        writeLock.lock();
         Loader oldLoader = null;
+        writeLock.lock();
         try {
             // Change components if necessary
             oldLoader = this.loader;

@@ -893,27 +893,33 @@ public abstract class ContainerBase extends LifecycleMBeanBase
     @Override
     protected synchronized void startInternal() throws LifecycleException {
 
-        // Start our subordinate components, if any
+        // 启动子组件
         logger = null;
         getLogger();
+
+        // 检查是否存在集群, 如果有就启动他们
         Cluster cluster = getClusterInternal();
         if (cluster instanceof Lifecycle) {
             ((Lifecycle) cluster).start();
         }
         Realm realm = getRealmInternal();
         if (realm instanceof Lifecycle) {
+            // 启动该容器对应的域对象
             ((Lifecycle) realm).start();
         }
 
-        // Start our child containers, if any
+        // 拿到子容器 Engine -> Host
         Container children[] = findChildren();
         List<Future<Void>> results = new ArrayList<>();
+
+        // 线程池执行 Callable 任务, 异步调用子容器的 start 方法, 启动子容器
         for (Container child : children) {
             results.add(startStopExecutor.submit(new StartChild(child)));
         }
 
         MultiThrowable multiThrowable = null;
 
+        // 获取 Callable 任务的返回值, 返回值为 void
         for (Future<Void> result : results) {
             try {
                 result.get();
@@ -932,15 +938,17 @@ public abstract class ContainerBase extends LifecycleMBeanBase
                     multiThrowable.getThrowable());
         }
 
-        // Start the Valves in our pipeline (including the basic), if any
+        // 启动该容器中 Pipeline 的 Valve (包括父类), 如果存在的话
+        // 顺序应该为 Engine -> Host -> Wrapper
         if (pipeline instanceof Lifecycle) {
             ((Lifecycle) pipeline).start();
         }
 
-
+        // 当 Engine 设置为 STARTING 状态后
+        // 激活 HostConfig 监听器
         setState(LifecycleState.STARTING);
 
-        // Start our thread
+        // 启动一个线程, 该线程专门用于监听 Session 的过期时间
         threadStart();
     }
 

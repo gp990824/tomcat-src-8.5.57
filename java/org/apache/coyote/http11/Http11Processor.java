@@ -455,12 +455,11 @@ public class Http11Processor extends AbstractProcessor {
 
 
     @Override
-    public SocketState service(SocketWrapperBase<?> socketWrapper)
-            throws IOException {
+    public SocketState service(SocketWrapperBase<?> socketWrapper) throws IOException {
         RequestInfo rp = request.getRequestProcessor();
         rp.setStage(org.apache.coyote.Constants.STAGE_PARSE);
 
-        // Setting up the I/O
+        // 配置 IO
         setSocketWrapper(socketWrapper);
 
         // Flags
@@ -473,7 +472,7 @@ public class Http11Processor extends AbstractProcessor {
         while (!getErrorState().isError() && keepAlive && !isAsync() && upgradeToken == null &&
                 sendfileState == SendfileState.DONE && !endpoint.isPaused()) {
 
-            // 解析请求头
+            // 解析请求头, 将请求的数据放入 Request, Response 对象中
             try {
                 if (!inputBuffer.parseRequestLine(keptAlive)) {
                     if (inputBuffer.getParsingRequestLinePhase() == -1) {
@@ -594,7 +593,7 @@ public class Http11Processor extends AbstractProcessor {
             if (getErrorState().isIoAllowed()) {
                 try {
                     rp.setStage(org.apache.coyote.Constants.STAGE_SERVICE);
-                    // CoyoteAdapter 适配器对齐处理, 将 Request , Response 对象转成
+                    // CoyoteAdapter 适配器对其处理, 将 Request , Response 对象转成
                     // ServletRequest, ServletResponse 对象
                     getAdapter().service(request, response);
 

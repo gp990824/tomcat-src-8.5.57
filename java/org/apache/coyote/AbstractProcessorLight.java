@@ -65,7 +65,7 @@ public abstract class AbstractProcessorLight implements Processor {
                 // Extra write event likely after async, ignore
                 state = SocketState.LONG;
             }
-            // 如果是请求, 默认来到这里, 被 Http11Processor 处理
+            // 如果是 OPEN_READ 请求,  被 Http11Processor 处理
             else if (status == SocketEvent.OPEN_READ) {
                 state = service(socketWrapper);
             }

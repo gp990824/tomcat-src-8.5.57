@@ -592,8 +592,7 @@ public class Catalina {
                             getConfigFile() + "] or [server-embed.xml]"));
                 }
                 else {
-                    log.warn(sm.getString("catalina.configFail",
-                            file.getAbsolutePath()));
+                    log.warn(sm.getString("catalina.configFail", file.getAbsolutePath()));
                     if (file.exists() && !file.canRead()) {
                         log.warn("Permissions incorrect, read permission is not allowed on the file.");
                     }
@@ -605,11 +604,12 @@ public class Catalina {
                 inputSource.setByteStream(inputStream);
                 digester.push(this);
                 // 完成对 server.xml 配置文件的解析
+                // 并创建了默认的组件对象 : StandardServer, StandardService
+                // StandardEngine, Connector, Executor, Mapper
                 digester.parse(inputSource);
             }
             catch (SAXParseException spe) {
-                log.warn("Catalina.start using " + getConfigFile() + ": " +
-                        spe.getMessage());
+                log.warn("Catalina.start using " + getConfigFile() + ": " + spe.getMessage());
                 return;
             }
             catch (Exception e) {
