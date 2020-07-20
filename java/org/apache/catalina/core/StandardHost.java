@@ -809,7 +809,7 @@ public class StandardHost extends ContainerBase implements Host {
         if ((errorValve != null) && (!errorValve.equals(""))) {
             try {
                 boolean found = false;
-                // 先拿到该 Pipeline 的所有 Vavle
+                // 先拿到 Host 的 Pipeline 的所有 Vavle
                 Valve[] valves = getPipeline().getValves();
                 for (Valve valve : valves) {
                     // 如果已存在, 直接返回

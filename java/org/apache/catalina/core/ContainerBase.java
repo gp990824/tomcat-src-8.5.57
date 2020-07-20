@@ -944,8 +944,9 @@ public abstract class ContainerBase extends LifecycleMBeanBase
             ((Lifecycle) pipeline).start();
         }
 
-        // 当 Engine 设置为 STARTING 状态后
-        // 激活 HostConfig 监听器
+        // 当容器组件生命周设置为 STARTING 状态后
+        // 激活对应的监听器, Engine -> EngineConfig , Host -> HostConfig
+        // Context -> ContextConfig (Context 不是在这里设置状态的) , Wrapper -> ServletConfig
         setState(LifecycleState.STARTING);
 
         // 启动一个线程, 该线程专门用于监听 Session 的过期时间

@@ -589,10 +589,11 @@ public class Http11Processor extends AbstractProcessor {
                 keepAlive = false;
             }
 
-            // Process the request in the adapter
+            // 在 CoyoteAdapter 中处理请求
             if (getErrorState().isIoAllowed()) {
                 try {
                     rp.setStage(org.apache.coyote.Constants.STAGE_SERVICE);
+
                     // CoyoteAdapter 适配器对其处理, 将 Request , Response 对象转成
                     // ServletRequest, ServletResponse 对象
                     getAdapter().service(request, response);

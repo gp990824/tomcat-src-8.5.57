@@ -986,10 +986,16 @@ public abstract class AbstractHttp11Protocol<S> extends AbstractProtocol<S> {
     protected Processor createProcessor() {
         Http11Processor processor = new Http11Processor(this, getEndpoint());
         processor.setAdapter(getAdapter());
+        // 在 HTTP/1.1中，KeepAlive 默认是开启的, 即每个连接请求完毕后都不会与服务器断开连接
+
+        // 默认的 KeepAlive 下, 每个 Socket 处理的最多的请求次数, 默认为 100
         processor.setMaxKeepAliveRequests(getMaxKeepAliveRequests());
+        // 开启 KeepAlive 下的超时时间 300 s
         processor.setConnectionUploadTimeout(getConnectionUploadTimeout());
+        // HTTP 当遇到文件上传时的默认超时时间
         processor.setDisableUploadTimeout(getDisableUploadTimeout());
         processor.setRestrictedUserAgents(getRestrictedUserAgents());
+        // 最大的 Post 处理尺寸的大小
         processor.setMaxSavePostSize(getMaxSavePostSize());
         return processor;
     }

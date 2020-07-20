@@ -241,7 +241,7 @@ public class ContextConfig implements LifecycleListener {
             return;
         }
 
-        // Process the event that has occurred
+        // 处理 Context 的 CONFIGURE_START_EVENT 事件, 在 Context 完成 域 的启动后
         if (event.getType().equals(Lifecycle.CONFIGURE_START_EVENT)) {
             configureStart();
         }
@@ -1054,6 +1054,8 @@ public class ContextConfig implements LifecycleListener {
      * an application's web.xml takes precedence over the host level or global
      * web.xml file.
      */
+    // 扫描并解析此 Web 应用的 web.xml 配置文件, 如果与全局 web.xml 配置文件有相同项
+    // 优先应用此 Web 应用的 web.xml 配置文件
     protected void webConfig() {
         /*
          * Anything and everything can override the global and host defaults.
@@ -1080,6 +1082,8 @@ public class ContextConfig implements LifecycleListener {
          *   those in JARs excluded from an absolute ordering) need to be
          *   scanned to check if they match.
          */
+
+        // 解析 web.xml 的解析对象
         WebXmlParser webXmlParser = new WebXmlParser(context.getXmlNamespaceAware(),
                 context.getXmlValidation(), context.getXmlBlockExternal());
 
@@ -1104,24 +1108,24 @@ public class ContextConfig implements LifecycleListener {
         // files are ignored for container provided JARs.
         Map<String, WebXml> fragments = processJarsForWebFragments(webXml, webXmlParser);
 
-        // Step 2. Order the fragments.
+        // Step 2. 片段式解析, 解析 webapps/Catalina/../web.xml 配置文件
         Set<WebXml> orderedFragments = null;
         orderedFragments =
                 WebXml.orderWebFragments(webXml, fragments, sContext);
 
-        // Step 3. Look for ServletContainerInitializer implementations
+        // Step 3. 寻找 ServletContainerInitializer 的实现
         if (ok) {
             processServletContainerInitializers();
         }
 
         if (!webXml.isMetadataComplete() || typeInitializerMap.size() > 0) {
             // Steps 4 & 5.
+            // 解析 /WEB-INF/class 文件
             processClasses(webXml, orderedFragments);
         }
 
         if (!webXml.isMetadataComplete()) {
-            // Step 6. Merge web-fragment.xml files into the main web.xml
-            // file.
+            // Step 6. 将 web-fragment.xml 合并到主中配置文件 web.xml 中
             if (ok) {
                 ok = webXml.merge(orderedFragments);
             }
@@ -1131,12 +1135,12 @@ public class ContextConfig implements LifecycleListener {
             // provide JSP servlet definition.
             webXml.merge(defaults);
 
-            // Step 8. Convert explicitly mentioned jsps to servlets
+            // Step 8. 将 JSP 转换为 Servlet
             if (ok) {
                 convertJsps(webXml);
             }
 
-            // Step 9. Apply merged web.xml to Context
+            // Step 9. 将合并的 web.xml 应用到 Context, 为 Context 添加子节点 Wrapper, 并启动他们
             if (ok) {
                 configureContext(webXml);
             }
@@ -1201,6 +1205,7 @@ public class ContextConfig implements LifecycleListener {
                 if ("META-INF".equals(webResource.getName())) {
                     continue;
                 }
+                // 处理 @WebResource 注解
                 processAnnotationsWebResource(webResource, webXml,
                         webXml.isMetadataComplete(), javaClassCache);
             }

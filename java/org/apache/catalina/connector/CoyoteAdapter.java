@@ -310,13 +310,13 @@ public class CoyoteAdapter implements Adapter {
         Response response = (Response) res.getNote(ADAPTER_NOTES);
 
         if (request == null) {
-            // Create objects
+            // 通过 Connector 创建 Request , Response 对象
             request = connector.createRequest();
             request.setCoyoteRequest(req);
             response = connector.createResponse();
             response.setCoyoteResponse(res);
 
-            // Link objects
+            // 相互链接, 一对一的关系
             request.setResponse(response);
             response.setRequest(request);
 
@@ -324,7 +324,7 @@ public class CoyoteAdapter implements Adapter {
             req.setNote(ADAPTER_NOTES, request);
             res.setNote(ADAPTER_NOTES, response);
 
-            // Set query string encoding
+            // 设置请求 URI 的编码
             req.getParameters().setQueryStringCharset(connector.getURICharset());
         }
 
@@ -338,15 +338,17 @@ public class CoyoteAdapter implements Adapter {
         req.getRequestProcessor().setWorkerThreadName(THREAD_NAME.get());
 
         try {
-            // 解析并设置 Catalina, 配置指定的请求参数
+            // 解析并设置 Catalina, 获取请求的参数
             // 解析请求, 根据请求 URL 得到对应的映射数据
-            // 找到响应的
+            // Mapper 与 URI 请求匹配, 找到对应的 Servlet, 放入 request 中
             postParseSuccess = postParseRequest(req, request, res, response);
             if (postParseSuccess) {
-                // check valves if we support async
+                // 检查 Valve 是否支持异步
                 request.setAsyncSupported(
                         connector.getService().getContainer().getPipeline().isAsyncSupported());
-                // 调用容器, 责任链模式, 调用 Engine 的 Valve 的 invoke 方法
+
+                // 调用容器, 责任链模式, 打开 Engine 的 Pipeline (管道)
+                // 调用第一个 Valve (阀门) 的 invoke 方法
                 connector.getService().getContainer().getPipeline().getFirst().invoke(
                         request, response);
             }

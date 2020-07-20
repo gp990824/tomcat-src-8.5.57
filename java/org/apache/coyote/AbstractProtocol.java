@@ -764,6 +764,7 @@ public abstract class AbstractProtocol<S> implements ProtocolHandler,
         private final Map<S, Processor> connections = new ConcurrentHashMap<>();
         private final RecycledProcessors recycledProcessors = new RecycledProcessors(this);
 
+        // 根据配置的 Connector , 实例化对应的 Protocol, 默认实例化的是 Http11NioProtocol
         public ConnectionHandler(AbstractProtocol<S> proto) {
             this.proto = proto;
         }
@@ -872,15 +873,16 @@ public abstract class AbstractProtocol<S> implements ProtocolHandler,
                     }
                 }
                 if (processor == null) {
-                    // 先从缓存中拿
+                    // 先从缓存中拿 (已回收的处理器)
                     processor = recycledProcessors.pop();
                     if (getLog().isDebugEnabled()) {
                         getLog().debug(sm.getString("abstractConnectionHandler.processorPop", processor));
                     }
                 }
                 if (processor == null) {
-                    // 根据协议, 创建处理器
+                    // 根据配置的 Connector 协议, 默认创建 Http11Process 处理器
                     processor = getProtocol().createProcessor();
+                    // 注册该 Http11Process
                     register(processor);
                     if (getLog().isDebugEnabled()) {
                         getLog().debug(sm.getString("abstractConnectionHandler.processorCreate", processor));

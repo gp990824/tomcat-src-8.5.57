@@ -4881,19 +4881,25 @@ public class StandardContext extends ContainerBase
 
         // Currently this is effectively a NO-OP but needs to be called to
         // ensure the NamingResources follows the correct lifecycle
+        // 启动命名资源
         if (namingResources != null) {
             namingResources.start();
         }
 
         // Post work directory
+        // 创建 work 目录
         postWorkDirectory();
 
-        // Add missing components as necessary
+        // 根据需要添加缺少的组件
         if (getResources() == null) {   // (1) Required by Loader
             if (log.isDebugEnabled())
                 log.debug("Configuring default Resources");
 
             try {
+                // 设置 WebResourceRoot , 用于加载 context.xml 中的资源
+                // 加载的类型支持三种 : 1. pre : 加载 context.xml 中的 <PreResource>
+                // 2. main : 加载 Web 应用下 /WEB-INF/lib(class)
+                // 3. jar : 加载 context.xml 中的 <JarResource>
                 setResources(new StandardRoot(this));
             }
             catch (IllegalArgumentException e) {
@@ -4902,9 +4908,11 @@ public class StandardContext extends ContainerBase
             }
         }
         if (ok) {
+            // 启动资源
             resourcesStart();
         }
 
+        // 启动 WebApp 类加载器
         if (getLoader() == null) {
             WebappLoader webappLoader = new WebappLoader();
             webappLoader.setDelegate(getDelegate());
@@ -4962,7 +4970,7 @@ public class StandardContext extends ContainerBase
 
         try {
             if (ok) {
-                // Start our subordinate components, if any
+                // 启动 WebApp 类加载器
                 Loader loader = getLoader();
                 if (loader instanceof Lifecycle) {
                     ((Lifecycle) loader).start();
@@ -4993,6 +5001,7 @@ public class StandardContext extends ContainerBase
                 logger = null;
                 getLogger();
 
+                // 启动此 Context 的的域
                 Realm realm = getRealmInternal();
                 if (null != realm) {
                     if (realm instanceof Lifecycle) {
@@ -5016,23 +5025,25 @@ public class StandardContext extends ContainerBase
                     context.setAttribute(Globals.CREDENTIAL_HANDLER, safeHandler);
                 }
 
-                // Notify our interested LifecycleListeners
+                // 发出事件, 通知监听器监听, Context 会被 ContextConfig 监听到
+                // 然后解析 web.xml 配置文件和 /WEB-INF/class 的文件, 将里面的
+                // Servlet, Filter, Listener ...  包装成 Wrapper, 应用到 Context 中
+                // 这里的 Servlet 并没有加载到 JVM 中, 只是解析并封装了
                 fireLifecycleEvent(Lifecycle.CONFIGURE_START_EVENT, null);
 
-                // Start our child containers, if not already started
+                // 启动此 Context 的子容器 Wrapper
                 for (Container child : findChildren()) {
                     if (!child.getState().isAvailable()) {
                         child.start();
                     }
                 }
 
-                // Start the Valves in our pipeline (including the basic),
-                // if any
+                // 等待所有子容器启动完毕后, 启动 Pipeline 和 Valve
                 if (pipeline instanceof Lifecycle) {
                     ((Lifecycle) pipeline).start();
                 }
 
-                // Acquire clustered manager
+                // 集群管理器
                 Manager contextManager = null;
                 Manager manager = getManager();
                 if (manager == null) {
@@ -5055,7 +5066,7 @@ public class StandardContext extends ContainerBase
                     }
                 }
 
-                // Configure default manager if none was specified
+                // 如果未配置, 则使用默认的
                 if (contextManager != null) {
                     if (log.isDebugEnabled()) {
                         log.debug(sm.getString("standardContext.manager",
@@ -5076,7 +5087,8 @@ public class StandardContext extends ContainerBase
                 ok = false;
             }
 
-            // We put the resources into the servlet context
+            // 将资源放入 servlet context 对象中
+            // ServletContext 用于 Servlet 与 Servlet 容器之间的通信
             if (ok) {
                 getServletContext().setAttribute
                         (Globals.RESOURCES_ATTR, getResources());
@@ -5106,10 +5118,11 @@ public class StandardContext extends ContainerBase
             // Set up the context init params
             mergeParameters();
 
-            // Call ServletContainerInitializers
+            // 调用 ServletContainerInitializers
             for (Map.Entry<ServletContainerInitializer, Set<Class<?>>> entry :
                     initializers.entrySet()) {
                 try {
+                    // 调用了 Wrapper 的 load 方法加载并实例化 Servlet
                     entry.getKey().onStartup(entry.getValue(),
                             getServletContext());
                 }

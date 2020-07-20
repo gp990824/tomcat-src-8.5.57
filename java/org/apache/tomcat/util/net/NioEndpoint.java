@@ -260,9 +260,11 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel> {
     public void startInternal() throws Exception {
 
         if (!running) {
+            // 设置状态位
             running = true;
             paused = false;
 
+            // 实例化缓存
             processorCache = new SynchronizedStack<>(SynchronizedStack.DEFAULT_SIZE,
                     socketProperties.getProcessorCache());
             eventCache = new SynchronizedStack<>(SynchronizedStack.DEFAULT_SIZE,
@@ -1141,7 +1143,7 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel> {
             // 一直循环, 直到收到 "shutdown" 命令
             while (running) {
 
-                // Loop if endpoint is paused
+                //  当 Endpoint 暂停时, 自旋
                 while (paused && running) {
                     state = AcceptorState.PAUSED;
                     try {
@@ -1477,7 +1479,7 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel> {
                 while (iterator != null && iterator.hasNext()) {
                     SelectionKey sk = iterator.next();
                     // 拿到 SelectionKey 的附件 (在注册的时候就绑定好了)
-                    // 这应该是一个 Socket 的包装对象
+                    // 这应该是一个 Socket 的包装对象 NioSocketWrapper
                     NioSocketWrapper attachment = (NioSocketWrapper) sk.attachment();
                     if (attachment == null) {
                         iterator.remove();
@@ -1813,7 +1815,7 @@ public class NioEndpoint extends AbstractJsseEndpoint<NioChannel> {
                         state = getHandler().process(socketWrapper, SocketEvent.OPEN_READ);
                     }
                     else {
-                        // 交给处理器,  处理此 Socket 的请求
+                        // 交给 ConnectionHandler 处理器,  处理此 Socket 的请求
                         state = getHandler().process(socketWrapper, event);
                     }
                     if (state == SocketState.CLOSED) {

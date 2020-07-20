@@ -1095,7 +1095,7 @@ public class HostConfig implements LifecycleListener {
         }
 
         Context context = null;
-        // 拿到此 Web 项目的 context.xml 配置文件
+        // 拿到 context.xml 配置文件
         File xml = new File(dir, Constants.ApplicationContextXml);
         File xmlCopy =
                 new File(host.getConfigBaseFile(), cn.getBaseName() + ".xml");
