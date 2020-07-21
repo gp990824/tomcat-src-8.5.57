@@ -220,10 +220,8 @@ public final class ApplicationFilterChain implements FilterChain {
                         ((HttpServletRequest) req).getUserPrincipal();
                 Object[] args = new Object[]{req, res};
                 SecurityUtil.doAsPrivilege("service",
-                        servlet,
-                        classTypeUsedInService,
-                        args,
-                        principal);
+                        servlet, classTypeUsedInService,
+                        args, principal);
             }
             else {
                 // 最后调用 Servlet 的逻辑

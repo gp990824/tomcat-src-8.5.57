@@ -70,7 +70,7 @@ final class StandardContextValve extends ValveBase {
             return;
         }
 
-        // 继续找到合适的 wrapper (里面包装了 Servlet 对象)
+        // 从 Request 的 MappingData 中拿 wrapper (里面包装了 Servlet 对象)
         Wrapper wrapper = request.getWrapper();
         if (wrapper == null || wrapper.isUnavailable()) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);

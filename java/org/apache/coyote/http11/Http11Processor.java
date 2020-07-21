@@ -474,6 +474,7 @@ public class Http11Processor extends AbstractProcessor {
 
             // 解析请求头, 将请求的数据放入 Request, Response 对象中
             try {
+                // 解析请求行, 将 URI 参数携带的值放入 request 对象的 queryMB 中
                 if (!inputBuffer.parseRequestLine(keptAlive)) {
                     if (inputBuffer.getParsingRequestLinePhase() == -1) {
                         return SocketState.UPGRADING;

@@ -595,7 +595,6 @@ public abstract class HttpServlet extends GenericServlet {
 
         String method = req.getMethod();
 
-        // 判断请求方式, 交给对应的方法进行处理
         if (method.equals(METHOD_GET)) {
             long lastModified = getLastModified(req);
             if (lastModified == -1) {
@@ -715,8 +714,6 @@ public abstract class HttpServlet extends GenericServlet {
         catch (ClassCastException e) {
             throw new ServletException(lStrings.getString("http.non_http"));
         }
-        // 强制将 ServletRequest, ServletResponse 对象转换成
-        // HHttpServletRequest, HttpServletResponse 对象, 传入具体的 Servlet
         service(request, response);
     }
 }

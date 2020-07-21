@@ -312,15 +312,16 @@ public class CoyoteAdapter implements Adapter {
         if (request == null) {
             // 通过 Connector 创建 Request , Response 对象
             request = connector.createRequest();
+            // 关联 req 和 request, request 对象包含了一个 req 对象
             request.setCoyoteRequest(req);
             response = connector.createResponse();
-            response.setCoyoteResponse(res);
+            response.setCoyoteResponse(res);// 同上
 
             // 相互链接, 一对一的关系
             request.setResponse(response);
             response.setRequest(request);
 
-            // Set as notes
+            // 方便下次使用, 速度更快
             req.setNote(ADAPTER_NOTES, request);
             res.setNote(ADAPTER_NOTES, response);
 
@@ -589,8 +590,7 @@ public class CoyoteAdapter implements Adapter {
         // SSL is enabled) use this to set the secure flag as well. If the
         // processor hasn't set it, use the settings from the connector
         if (req.scheme().isNull()) {
-            // Use connector scheme and secure configuration, (defaults to
-            // "http" and false respectively)
+            // 默认为 "http" 和 false
             req.scheme().setString(connector.getScheme());
             request.setSecure(connector.getSecure());
         }
@@ -599,15 +599,14 @@ public class CoyoteAdapter implements Adapter {
             request.setSecure(req.scheme().equals("https"));
         }
 
-        // At this point the Host header has been processed.
-        // Override if the proxyPort/proxyHost are set
+        // 代理
         String proxyName = connector.getProxyName();
         int proxyPort = connector.getProxyPort();
         if (proxyPort != 0) {
             req.setServerPort(proxyPort);
         }
         else if (req.getServerPort() == -1) {
-            // Not explicitly set. Use default ports based on the scheme
+            // 如果是 HTTPS 请求, 转发到 443 端口
             if (req.scheme().equals("https")) {
                 req.setServerPort(443);
             }
@@ -618,10 +617,10 @@ public class CoyoteAdapter implements Adapter {
         if (proxyName != null) {
             req.serverName().setString(proxyName);
         }
-
+        // 未解码的 URI
         MessageBytes undecodedURI = req.requestURI();
 
-        // Check for ping OPTIONS * request
+        // URI 通配符匹配
         if (undecodedURI.equals("*")) {
             if (req.method().equalsIgnoreCase("OPTIONS")) {
                 StringBuilder allow = new StringBuilder();
@@ -639,18 +638,17 @@ public class CoyoteAdapter implements Adapter {
                 response.sendError(400, "Invalid URI");
             }
         }
-
+        // 已解码的 URI , 应该为 null
         MessageBytes decodedURI = req.decodedURI();
-
+        // 下面就是解码 URI
         if (undecodedURI.getType() == MessageBytes.T_BYTES) {
             // Copy the raw URI to the decodedURI
             decodedURI.duplicate(undecodedURI);
 
-            // Parse (and strip out) the path parameters
+            // 从请求中提取路径参数,  比如 : /path;name=value;name2=value2/
             parsePathParameters(req, request);
 
-            // URI decoding
-            // %xx decoding of the URL
+            // URI 解码
             try {
                 req.getURLDecoder().convert(decodedURI.getByteChunk(), connector.getEncodedSolidusHandlingInternal());
             }
@@ -688,7 +686,7 @@ public class CoyoteAdapter implements Adapter {
             }
         }
 
-        // Request mapping.
+        // 请求映射
         MessageBytes serverName;
         if (connector.getUseIPVHosts()) {
             serverName = req.localName();
@@ -701,8 +699,7 @@ public class CoyoteAdapter implements Adapter {
             serverName = req.serverName();
         }
 
-        // Version for the second mapping loop and
-        // Context that we expect to get for that version
+        // 找到 Context 对应的版本 ContextVersion
         String version = null;
         Context versionContext = null;
         boolean mapRequired = true;
@@ -715,7 +712,8 @@ public class CoyoteAdapter implements Adapter {
         }
 
         while (mapRequired) {
-            // This will map the the latest version by default
+            // 找到 Mapper 对象
+            // 这里就会对 URI 映射, 找到 Host, Context, Warpper 保存在 MappingData 中
             connector.getService().getMapper().map(serverName, decodedURI,
                     version, request.getMappingData());
 
@@ -733,14 +731,12 @@ public class CoyoteAdapter implements Adapter {
                 return true;
             }
 
-            // Now we have the context, we can parse the session ID from the URL
-            // (if any). Need to do this before we redirect in case we need to
-            // include the session id in the redirect
+            // 解析 sessionId
             String sessionID;
             if (request.getServletContext().getEffectiveSessionTrackingModes()
                     .contains(SessionTrackingMode.URL)) {
 
-                // Get the session ID if there was one
+                // 从请求中获取 sessionId (如果有的话)
                 sessionID = request.getPathParameter(
                         SessionConfig.getSessionUriParamName(
                                 request.getContext()));
@@ -750,7 +746,7 @@ public class CoyoteAdapter implements Adapter {
                 }
             }
 
-            // Look for session ID in cookies and SSL session
+            // 在 Cookie 和 SSL 会话中查找 session ID
             try {
                 parseSessionCookiesId(request);
             }
@@ -767,6 +763,7 @@ public class CoyoteAdapter implements Adapter {
             sessionID = request.getRequestedSessionId();
 
             mapRequired = false;
+            // 如果没有指定 Context 版本
             if (version != null && request.getContext() == versionContext) {
                 // We got the version that we asked for. That is it.
             }
@@ -775,8 +772,8 @@ public class CoyoteAdapter implements Adapter {
                 versionContext = null;
 
                 Context[] contexts = request.getMappingData().contexts;
-                // Single contextVersion means no need to remap
-                // No session ID means no possibility of remap
+                // 单个 contextVersion 不需要映射
+                // 没有 session ID 意味着没有重新映射的可能性
                 if (contexts != null && sessionID != null) {
                     // Find the context associated with the session
                     for (int i = contexts.length; i > 0; i--) {
@@ -820,7 +817,7 @@ public class CoyoteAdapter implements Adapter {
             }
         }
 
-        // Possible redirect
+        // 有可能重定向
         MessageBytes redirectPathMB = request.getMappingData().redirectPath;
         if (!redirectPathMB.isNull()) {
             String redirectPath = URLEncoder.DEFAULT.encode(

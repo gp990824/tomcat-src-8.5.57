@@ -949,7 +949,9 @@ public abstract class ContainerBase extends LifecycleMBeanBase
         // Context -> ContextConfig (Context 不是在这里设置状态的) , Wrapper -> ServletConfig
         setState(LifecycleState.STARTING);
 
-        // 启动一个线程, 该线程专门用于监听 Session 的过期时间
+        // 启动一个线程, 用于监听 Session 的过期以及热部署
+        // 比如手动往 webapps 文件夹下复制了一份已编译好的 Web 应用
+        // 就会被该线程监听到, 并交给 MapperListener 处理
         threadStart();
     }
 

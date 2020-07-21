@@ -74,6 +74,7 @@ final class StandardWrapperValve
     // --------------------------------------------------------- Public Methods
 
 
+
     /**
      * Invoke the servlet we are managing, respecting the rules regarding
      * servlet lifecycle and SingleThreadModel support.
@@ -165,8 +166,9 @@ final class StandardWrapperValve
 
         MessageBytes requestPathMB = request.getRequestPathMB();
         DispatcherType dispatcherType = DispatcherType.REQUEST;
-        if (request.getDispatcherType() == DispatcherType.ASYNC)
+        if (request.getDispatcherType() == DispatcherType.ASYNC) {
             dispatcherType = DispatcherType.ASYNC;
+        }
         request.setAttribute(Globals.DISPATCHER_TYPE_ATTR, dispatcherType);
         request.setAttribute(Globals.DISPATCHER_REQUEST_PATH_ATTR,
                 requestPathMB);
@@ -205,7 +207,7 @@ final class StandardWrapperValve
                     }
                     else {
                         filterChain.doFilter
-                                (request.getRequest(), response.getResponse());
+                                (request.getRequest(), response.getResponse());// Request 变成了 RequestFacade, Response 亦如此
                     }
                 }
 
@@ -316,7 +318,6 @@ final class StandardWrapperValve
                 minTime = time;
         }
     }
-
 
     // -------------------------------------------------------- Private Methods
 
